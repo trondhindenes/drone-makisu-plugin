@@ -9,7 +9,10 @@ including support for a `.tags` file which will be used if no tags are specified
 ### AWS ECR
 this plugin tries to be smart about pushing to AWS ECR registries. If the registry hostname looks like an AWS ECR one, it automatically tries to set up the necessary auth settings. All you need to do is to use environment variables to specify AWS credentials, if the build isn't running with a role that has implicit access to AWS.
 
-### Pusing to other registries
+### Docker hub
+The syntax is a bit weird, since it's necessary to specify the docker hub host (`index.docker.io`). See examples down below for details
+
+### Pusing to other registries than Docker Hub and AWS ECR
 Not implemented just yet - coming shortly!
 
 ## Parameters
@@ -23,7 +26,7 @@ Not implemented just yet - coming shortly!
 - storage: optional. specify cache dir for layers   
 - commit: optional. Defaults to `implicit`. Set it to `explicit` to use makisu's smart caching feature.   
 
-## Example
+## Examples
 ```yaml
 ---
 kind: pipeline
@@ -40,7 +43,7 @@ steps:
   pull: always
   environment:
     country: au
-    country: jazz
+    music: jazz
   volumes:
   - name: cache
     path: /cache
@@ -68,4 +71,35 @@ steps:
     tags:
     - latest
     - what
+```
+
+regular build and push to docker hub:
+```yaml
+- name: docker-hub
+  image: trondhindenes/drone-makisu-plugin
+  pull: always
+  volumes:
+  - name: cache
+    path: /cache
+  settings:
+    storage: /cache
+    repo: trondhindenes/drone-makisu-plugin
+    registry: index.docker.io
+    tags:
+    - latest
+```
+
+regular build and push to docker hub (alternative version):
+```yaml
+- name: docker-hub
+  image: trondhindenes/drone-makisu-plugin
+  pull: always
+  volumes:
+  - name: cache
+    path: /cache
+  settings:
+    storage: /cache
+    repo: index.docker.io/trondhindenes/drone-makisu-plugin
+    tags:
+    - latest
 ```

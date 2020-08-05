@@ -6,6 +6,7 @@ import subprocess
 import time
 import sys
 
+
 def execute_process(cmd, env_vars={}, fail_on_non_zero_exit=True, log_cmd=True, log_envvars=False, log_stdout=True, log_stderr=True):
     proc_env_vars = os.environ.copy()
     proc_env_vars = {**proc_env_vars, **env_vars}
@@ -28,6 +29,7 @@ def execute_process(cmd, env_vars={}, fail_on_non_zero_exit=True, log_cmd=True, 
             raise ValueError('exiting')
     return
 
+
 def get_vars(vars_dict, vars_list, required=True):
     for var_item in vars_list:
         var_env_name = f'PLUGIN_{var_item}'.upper()
@@ -36,9 +38,17 @@ def get_vars(vars_dict, vars_list, required=True):
             raise ValueError('required variable {var_item} not found')
         vars_dict[var_item] = var_env_value
 
+
 vars = {}
 get_vars(vars, ['repo'])
-get_vars(vars, ['tags', 'build_args', 'build_args_from_env', 'registry', 'dockerfile', 'debug', 'storage', 'commit'], required=False)
+get_vars(
+    vars,
+    ['tags', 'build_args', 'build_args_from_env', 'registry',
+     'dockerfile', 'debug', 'storage', 'commit',
+     'username', 'password'
+     ],
+    required=False
+)
 
 debug = False
 if vars['debug'] and vars['debug'].lower() == 'true':
@@ -63,6 +73,8 @@ if not vars['tags'] and os.path.exists('.tags'):
         vars['tags'] = tags_from_files.replace(os.linesep, '')
     print('read tags from .tags file:')
     print(vars['tags'])
+elif not vars['tags']:
+    vars['tags'] = 'latest'
 
 if debug:
     print(json.dumps(vars, indent=4, sort_keys=True))
@@ -70,6 +82,7 @@ if debug:
 can_push = False
 registry = None
 registry_is_ecr = False
+registry_is_docker_hub = False
 registry_config_str = ''
 cmd_env = {}
 replica_str = ''
@@ -91,11 +104,7 @@ if vars['build_args_from_env']:
 
 if '/' in vars['repo'] and not vars['registry']:
     registry = vars['repo'].split('/')[0]
-    repo = vars['repo'].split('/')[1]
-    can_push = True
-elif '/' in vars['repo'] and vars['registry']:
-    registry = vars['registry']
-    repo = vars['repo'].split('/')[1]
+    repo = '/'.join(vars['repo'].split('/')[1:])
     can_push = True
 elif vars['registry']:
     registry = vars['registry']
@@ -123,7 +132,8 @@ full_name_first_img = repo + ':' + first_tag
 if can_push and '.ecr.' in registry and '.amazonaws.com' in registry:
     registry_is_ecr = True
     cmd_env['AWS_SDK_LOAD_CONFIG'] = 'true'
-
+elif can_push and vars['username'] and vars['password']:
+    registry_is_docker_hub = True
 
 if can_push and registry_is_ecr:
     registry_config = {
@@ -132,6 +142,26 @@ if can_push and registry_is_ecr:
                 'push_chunk': -1,
                 'security': {
                     'credsStore': 'ecr-login'
+                }
+            }
+        }
+    }
+    registry_config_str = f'--registry-config=\'{json.dumps(registry_config)}\' '
+
+elif can_push and registry_is_docker_hub:
+    registry_config = {
+        'index.docker.io': {
+            '.*': {
+                'security': {
+                    'tls': {
+                        'client': {
+                            'disabled' : False
+                        }
+                    },
+                    'basic': {
+                        'username': vars['username'],
+                        'password': vars['password']
+                    }
                 }
             }
         }
