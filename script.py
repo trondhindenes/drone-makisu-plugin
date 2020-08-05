@@ -41,7 +41,7 @@ get_vars(vars, ['repo'])
 get_vars(vars, ['tags', 'build_args', 'build_args_from_env', 'registry', 'dockerfile', 'debug', 'storage'], required=False)
 
 debug = False
-if vars['debug'].lower() == 'true':
+if vars['debug'] and vars['debug'].lower() == 'true':
     debug = True
 
 storage_str = ''
