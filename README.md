@@ -12,6 +12,17 @@ this plugin tries to be smart about pushing to AWS ECR registries. If the regist
 ### Pusing to other registries
 Not implemented just yet - coming shortly!
 
+## Options
+repo
+tags
+build_args
+build_args_from_env
+registry
+dockerfile
+debug
+storage
+commit
+
 ## Example
 ```yaml
 ---
@@ -49,7 +60,7 @@ steps:
   pull: always
   volumes:
   - name: cache
-    path: /makisu-storage
+    path: /cache
   settings:
     storage: /cache
     repo: buildtest
