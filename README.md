@@ -2,7 +2,7 @@
 
 Executes container builds in Drone CI using Makisu (<https://github.com/uber/makisu>)
 
-Attempts to mimic the arguments for the regular docker plugin as closely as possible, 
+Attempts to mimic the arguments for the regular docker plugin (<http://plugins.drone.io/drone-plugins/drone-docker/>) as closely as possible, 
 including support for a `.tags` file which will be used if no tags are specified in settings.
 
 ## Things to know
