@@ -1,18 +1,19 @@
-FROM golang:1.12
-WORKDIR /temp/repo
-RUN \
-    git clone https://github.com/uber/makisu.git
-WORKDIR /workspace/github.com/uber/makisu
-RUN \
-    cp /temp/repo/makisu/Makefile . &&\
-    cp /temp/repo/makisu/go.mod . &&\
-    cp /temp/repo/makisu/go.sum . &&\
-    make vendor
-RUN \
-    cp /temp/repo/makisu/.git -r . &&\
-    cp /temp/repo/makisu/bin -r . &&\
-    cp /temp/repo/makisu/lib -r . &&\
-    make lbins
+#FROM golang:1.12
+#WORKDIR /temp/repo
+#RUN \
+#    git clone https://github.com/uber/makisu.git
+#WORKDIR /workspace/github.com/uber/makisu
+#RUN \
+#    cp /temp/repo/makisu/Makefile . &&\
+#    cp /temp/repo/makisu/go.mod . &&\
+#    cp /temp/repo/makisu/go.sum . &&\
+#    make vendor
+#RUN \
+#    cp /temp/repo/makisu/.git -r . &&\
+#    cp /temp/repo/makisu/bin -r . &&\
+#    cp /temp/repo/makisu/lib -r . &&\
+#    make lbins
+FROM gcr.io/uber-container-tools/makisu
 
 FROM ubuntu:20.04
 WORKDIR /temp
@@ -21,8 +22,10 @@ RUN wget https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.co
 
 FROM python:3.8
 WORKDIR /makisu-internal
-COPY --from=0 /workspace/github.com/uber/makisu/bin/makisu/makisu.linux /makisu-internal/makisu
-COPY --from=0 /temp/repo/makisu/assets/cacerts.pem /makisu-internal/certs/cacerts.pem
+#COPY --from=0 /workspace/github.com/uber/makisu/bin/makisu/makisu.linux /makisu-internal/makisu
+#COPY --from=0 /temp/repo/makisu/assets/cacerts.pem /makisu-internal/certs/cacerts.pem
+COPY --from=0 /makisu-internal/makisu /makisu-internal/makisu
+COPY --from=0 /makisu-internal/certs/cacerts.pem /makisu-internal/certs/cacerts.pem
 COPY --from=1 /temp/docker-credential-ecr-login /bin/docker-credential-ecr-login
 COPY script.py /bin/script.py
 RUN \
