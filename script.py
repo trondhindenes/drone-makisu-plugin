@@ -38,11 +38,15 @@ def get_vars(vars_dict, vars_list, required=True):
 
 vars = {}
 get_vars(vars, ['repo'])
-get_vars(vars, ['tags', 'build_args', 'build_args_from_env', 'registry', 'dockerfile', 'debug', 'storage'], required=False)
+get_vars(vars, ['tags', 'build_args', 'build_args_from_env', 'registry', 'dockerfile', 'debug', 'storage', 'commit'], required=False)
 
 debug = False
 if vars['debug'] and vars['debug'].lower() == 'true':
     debug = True
+
+commit = 'implicit'
+if vars['commit'] and vars['commit'] == 'explicit':
+    commit = 'explicit'
 
 storage_str = ''
 if vars['storage']:
@@ -138,5 +142,5 @@ registry_param = ''
 if can_push:
     registry_param = f'--push {registry} '
 
-cmd_line = f'/makisu-internal/makisu build -t {full_name_first_img} --modifyfs=true --log-fmt=console -f {dockerfile} {storage_str}{registry_param}{registry_config_str}{replica_str}{build_args_str} .'
+cmd_line = f'/makisu-internal/makisu build -t {full_name_first_img} --commit={commit} --modifyfs=true --log-fmt=console -f {dockerfile} {storage_str}{registry_param}{registry_config_str}{replica_str}{build_args_str} .'
 execute_process(cmd_line, env_vars=cmd_env, log_cmd=debug)
