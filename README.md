@@ -13,15 +13,15 @@ this plugin tries to be smart about pushing to AWS ECR registries. If the regist
 Not implemented just yet - coming shortly!
 
 ## Parameters
-repo: required. Given the image name `trondhindenes/drone-makisu-plugin:latest`, the `repo` field would be `drone-makisu-plugin`. If this parameter is specified as `xx/xx` and `registry` isnt specified, the field will be automatically split into registry and repo.
-tags: optional. List of tags to use on the image. Defaults to 'latest'.  If this parameter is omitted, and a file called `.tags` is found in the local dir, that file will be used instead. It should contain a comma-separated list of tags to use.
-build_args: optional. Dict of build args to use when building the image
-build_args_from_env: optional. List of env vars to convert to build args
-registry: optional. where to push the image. See also `repo` above
-dockerfile: optional, defaults to `Dockerfile`
-debug: optional. Set it to `true` to print more info
-storage: optional. specify cache dir for layers
-commit: optional. Defaults to `implicit`. Set it to `explicit` to use makisu's smart caching feature.
+- repo: required. Given the image name `trondhindenes/drone-makisu-plugin:latest`, the `repo` field would be `drone-makisu-plugin`. If this parameter is specified as `xx/xx` and `registry` isnt specified, the field will be automatically split into registry and repo.   
+- tags: optional. List of tags to use on the image. Defaults to 'latest'.  If this parameter is omitted, and a file called `.tags` is found in the local dir, that file will be used instead. It should contain a comma-separated list of tags to use.   
+- build_args: optional. Dict of build args to use when building the image   
+- build_args_from_env: optional. List of env vars to convert to build args   
+- registry: optional. where to push the image. See also `repo` above   
+- dockerfile: optional, defaults to `Dockerfile`   
+- debug: optional. Set it to `true` to print more info   
+- storage: optional. specify cache dir for layers   
+- commit: optional. Defaults to `implicit`. Set it to `explicit` to use makisu's smart caching feature.   
 
 ## Example
 ```yaml
