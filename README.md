@@ -5,6 +5,13 @@ Executes container builds in Drone CI using Makisu
 Attempts to mimic the arguments for the regular docker plugin as closely as possible, 
 including support for a `.tags` file which will be used if no tags are specified in settings.
 
+## Things to know
+### AWS ECR
+this plugin tries to be smart about pushing to AWS ECR registries. If the registry hostname looks like an AWS ECR one, it automatically tries to set up the necessary auth settings. All you need to do is to use environment variables to specify AWS credentials, if the build isn't running with a role that has implicit access to AWS.
+
+### Pusing to other registries
+Not implemented just yet - coming shortly!
+
 ## Example
 ```yaml
 ---
