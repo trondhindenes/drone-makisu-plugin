@@ -3,6 +3,8 @@
 import os
 import json
 import subprocess
+import time
+import sys
 
 def execute_process(cmd, env_vars={}, fail_on_non_zero_exit=True, log_cmd=True, log_envvars=False, log_stdout=True, log_stderr=True):
     proc_env_vars = os.environ.copy()
@@ -12,22 +14,19 @@ def execute_process(cmd, env_vars={}, fail_on_non_zero_exit=True, log_cmd=True, 
     if log_envvars:
         print('envvars')
         print(proc_env_vars)
-    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=proc_env_vars)
-    process.wait()
-    out = []
-    for item in process.stdout:
-        item_formatted = item.decode().replace('\n', '')
-        out.append(item_formatted)
-    for item in out:
-        if log_stdout:
-            print(item)
-
-    if process.returncode != 0:
-        print(f'Process exited with return code {process.returncode}')
-        print(process.stderr.read())
+    process = subprocess.Popen(cmd, shell=True, stdout=sys.stdout, stderr=sys.stderr, env=proc_env_vars)
+    return_code = None
+    while True:
+        return_code = process.poll()
+        if return_code is not None:
+            break
+        else:
+            time.sleep(0.05)
+    if return_code != 0:
+        print(f'Process exited with return code {return_code}')
         if fail_on_non_zero_exit:
             raise ValueError('exiting')
-    return out
+    return
 
 def get_vars(vars_dict, vars_list, required=True):
     for var_item in vars_list:
@@ -39,7 +38,15 @@ def get_vars(vars_dict, vars_list, required=True):
 
 vars = {}
 get_vars(vars, ['repo'])
-get_vars(vars, ['tags', 'build_args', 'build_args_from_env', 'registry', 'dockerfile'], required=False)
+get_vars(vars, ['tags', 'build_args', 'build_args_from_env', 'registry', 'dockerfile', 'debug', 'storage'], required=False)
+
+debug = False
+if vars['debug'].lower() == 'true':
+    debug = True
+
+storage_str = ''
+if vars['storage']:
+    storage_str = '--storage=' + vars['storage'] + ' '
 
 if not vars['dockerfile']:
     vars['dockerfile'] = 'Dockerfile'
@@ -52,6 +59,9 @@ if not vars['tags'] and os.path.exists('.tags'):
         vars['tags'] = tags_from_files.replace(os.linesep, '')
     print('read tags from .tags file:')
     print(vars['tags'])
+
+if debug:
+    print(json.dumps(vars, indent=4, sort_keys=True))
 
 can_push = False
 registry = None
@@ -114,7 +124,7 @@ if can_push and '.ecr.' in registry and '.amazonaws.com' in registry:
 if can_push and registry_is_ecr:
     registry_config = {
         registry: {
-            f'{repo}/*': {
+            '.*': {
                 'push_chunk': -1,
                 'security': {
                     'credsStore': 'ecr-login'
@@ -128,5 +138,5 @@ registry_param = ''
 if can_push:
     registry_param = f'--push {registry} '
 
-cmd_line = f'/makisu-internal/makisu build -t {full_name_first_img} --modifyfs --log-fmt console -f {dockerfile} {registry_param}{registry_config_str}{replica_str}{build_args_str} .'
-execute_process(cmd_line, env_vars=cmd_env, log_cmd=False)
+cmd_line = f'/makisu-internal/makisu build -t {full_name_first_img} --modifyfs=true --log-fmt=console -f {dockerfile} {storage_str}{registry_param}{registry_config_str}{replica_str}{build_args_str} .'
+execute_process(cmd_line, env_vars=cmd_env, log_cmd=debug)

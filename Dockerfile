@@ -30,4 +30,5 @@ RUN \
     chmod +x /bin/docker-credential-ecr-login &&\
     chmod +x /bin/script.py
 ENV PYTHONUNBUFFERED=1
+ENV SSL_CERT_DIR /makisu-internal/certs
 ENTRYPOINT /bin/script.py

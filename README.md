@@ -32,8 +32,9 @@ steps:
     country: jazz
   volumes:
   - name: cache
-    path: /makisu-storage
+    path: /cache
   settings:
+    storage: /cache
     repo: buildtest
     registry: 123.dkr.ecr.eu-west-1.amazonaws.com
     build_args:
@@ -50,6 +51,7 @@ steps:
   - name: cache
     path: /makisu-storage
   settings:
+    storage: /cache
     repo: buildtest
     registry: 123.dkr.ecr.eu-west-1.amazonaws.com
 ```
