@@ -20,7 +20,7 @@ WORKDIR /temp
 RUN apt-get update && apt-get install -y wget
 RUN wget https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/0.4.0/linux-amd64/docker-credential-ecr-login
 
-FROM python:3.8
+FROM python:3.8-alpine
 WORKDIR /makisu-internal
 #COPY --from=0 /workspace/github.com/uber/makisu/bin/makisu/makisu.linux /makisu-internal/makisu
 #COPY --from=0 /temp/repo/makisu/assets/cacerts.pem /makisu-internal/certs/cacerts.pem
